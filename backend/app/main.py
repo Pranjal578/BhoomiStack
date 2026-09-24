@@ -6,6 +6,16 @@ from fastapi.middleware.cors import CORSMiddleware
 from .database import engine, Base
 from .routers import parcels, auth, dashboard, misc
 
+import os
+from pathlib import Path
+from dotenv import load_dotenv
+
+# Load .env from backend and root directories
+backend_dir = Path(__file__).resolve().parent.parent
+root_dir = backend_dir.parent
+load_dotenv(backend_dir / ".env")
+load_dotenv(root_dir / ".env")
+
 # Create all tables
 Base.metadata.create_all(bind=engine)
 
@@ -19,9 +29,12 @@ app = FastAPI(
 )
 
 # CORS
+cors_env = os.getenv("CORS_ORIGINS", "http://localhost:5173,http://localhost:3000,*")
+cors_origins = [orig.strip() for orig in cors_env.split(",") if orig.strip()]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://localhost:3000", "*"],
+    allow_origins=cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

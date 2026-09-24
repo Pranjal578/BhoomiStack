@@ -2,7 +2,7 @@ import client from './client';
 import type {
   Parcel, ParcelSearchResult, OwnershipRecord, Registration, Encumbrance,
   BuildingPermission, LandUseRecord, Dispute, PropertyTax, Utility,
-  LandTruthReport, VerificationReport, DocumentAnalysisResult, AuditLog, ApiResponse
+  LandTruthReport, VerificationReport, DocumentAnalysisResult, AuditLog, ApiResponse, User
 } from '../types';
 
 // --- Parcel ---
@@ -120,3 +120,20 @@ export const getAuditLogs = async (params?: { ulpin?: string; action?: string; l
   const { data } = await client.get<ApiResponse<AuditLog[]>>(`/audit-logs?${q}`);
   return data.data;
 };
+
+// --- Users & Access Management ---
+export const getUsers = async (): Promise<User[]> => {
+  const { data } = await client.get<ApiResponse<User[]>>('/users');
+  return data.data;
+};
+
+export const getCurrentUser = async (): Promise<User> => {
+  const { data } = await client.get<ApiResponse<User>>('/auth/me');
+  return data.data;
+};
+
+export const toggleUserStatus = async (userId: number, isActive?: number): Promise<User> => {
+  const { data } = await client.patch<ApiResponse<User>>(`/users/${userId}/status`, { is_active: isActive });
+  return data.data;
+};
+

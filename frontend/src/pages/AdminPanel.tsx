@@ -4,22 +4,28 @@ import {
   AlertTriangle, Lock, Users, Layers, HardDrive, Download
 } from 'lucide-react';
 import client from '../api/client';
-import type { AuditLog } from '../types';
+import { getUsers, toggleUserStatus } from '../api';
+import type { AuditLog, User } from '../types';
 import { useUiStore } from '../store';
 
 export default function AdminPanel() {
   const { addToast } = useUiStore();
   const [logs, setLogs] = useState<AuditLog[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [scanning, setScanning] = useState(false);
 
   useEffect(() => {
-    client.get('/audit-logs')
-      .then((res) => {
-        setLogs(res.data.data || []);
+    Promise.all([
+      client.get('/audit-logs'),
+      getUsers().catch(() => [])
+    ])
+      .then(([logsRes, usersData]) => {
+        setLogs(logsRes.data.data || []);
+        setUsers(usersData || []);
       })
       .catch((err) => {
-        console.error('Failed to load audit logs', err);
+        console.error('Failed to load admin data', err);
       })
       .finally(() => setLoading(false));
   }, []);
@@ -41,6 +47,16 @@ export default function AdminPanel() {
     a.download = `bhoomistack-audit-trail-${new Date().toISOString().slice(0, 10)}.json`;
     a.click();
     addToast('Audit trail exported successfully', 'info');
+  };
+
+  const handleToggleUser = async (userId: number, currentStatus?: number) => {
+    try {
+      const updated = await toggleUserStatus(userId, currentStatus === 1 ? 0 : 1);
+      setUsers((prev) => prev.map((u) => (u.id === userId ? { ...u, is_active: updated.is_active } : u)));
+      addToast(`Updated status for user #${userId}`, 'success');
+    } catch {
+      addToast('Failed to update user status', 'error');
+    }
   };
 
   return (
@@ -189,6 +205,77 @@ export default function AdminPanel() {
                   <td>Active Title Lawsuit Stays</td>
                   <td><span className="badge badge-VERIFIED">CONNECTED</span></td>
                 </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* System Users & Access Control */}
+        <div className="card" style={{ marginBottom: 28 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+            <div>
+              <h3 style={{ fontSize: 16, fontWeight: 700, color: '#0f172a' }}>
+                System Users & Role-Based Access Control ({users.length})
+              </h3>
+              <p style={{ fontSize: 12, color: '#64748b', marginTop: 2 }}>
+                Officer and citizen credentials, assigned jurisdictions, and account operational status
+              </p>
+            </div>
+            <span className="badge badge-VERIFIED">RBAC Enforced</span>
+          </div>
+
+          <div style={{ overflowX: 'auto' }}>
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th>User ID</th>
+                  <th>Full Name</th>
+                  <th>Email / Account</th>
+                  <th>Department</th>
+                  <th>Role</th>
+                  <th>Status</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {users.length === 0 ? (
+                  <tr>
+                    <td colSpan={7} style={{ textAlign: 'center', padding: 20, color: '#64748b' }}>
+                      No users registered.
+                    </td>
+                  </tr>
+                ) : (
+                  users.map((u) => (
+                    <tr key={u.id || u.email}>
+                      <td style={{ fontFamily: 'monospace', fontWeight: 600 }}>#{u.id}</td>
+                      <td style={{ fontWeight: 600, color: '#0f172a' }}>{u.name}</td>
+                      <td style={{ fontFamily: 'monospace', fontSize: 12 }}>{u.email}</td>
+                      <td>{u.department || 'General'}</td>
+                      <td>
+                        <span className={`role-badge ${u.role}`}>
+                          {u.role}
+                        </span>
+                      </td>
+                      <td>
+                        <span className={`badge ${u.is_active ? 'badge-VERIFIED' : 'badge-FLAGGED'}`}>
+                          {u.is_active ? 'ACTIVE' : 'DISABLED'}
+                        </span>
+                      </td>
+                      <td>
+                        {u.id && (
+                          <button
+                            type="button"
+                            className={`btn btn-xs ${u.is_active ? 'btn-outline' : 'btn-primary'}`}
+                            onClick={() => handleToggleUser(u.id!, u.is_active)}
+                            style={{ fontSize: 11, padding: '3px 8px' }}
+                          >
+                            {u.is_active ? 'Disable' : 'Enable'}
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>

@@ -323,3 +323,22 @@ class DocumentAnalysisResult(BaseModel):
     match_results: List[FieldMatch]
     authenticity_score: int  # 0-100
     recommendation: str
+
+
+# --- User Schemas ---
+class UserSchema(BaseModel):
+    id: int
+    email: str
+    name: Optional[str] = None
+    role: str
+    department: Optional[str] = None
+    is_active: int = 1
+    created_at: Optional[str] = None
+
+    class Config:
+        from_attributes = True
+
+
+class UserStatusUpdate(BaseModel):
+    is_active: Optional[int] = None
+

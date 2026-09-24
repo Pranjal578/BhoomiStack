@@ -192,9 +192,13 @@ export interface DocumentAnalysisResult {
 }
 
 export interface User {
+  id?: number;
   email: string;
   name: string;
   role: string;
+  department?: string;
+  is_active?: number;
+  created_at?: string;
 }
 
 export interface AuditLog {

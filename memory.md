@@ -156,4 +156,5 @@ All env variables in Vite must be prefixed `VITE_`. Access via `import.meta.env.
 |---------|------|---------|
 | 1.0 | 2026-09-15 | Initial project setup, all 6 docs created |
 | 1.1 | 2026-09-15 | Full-stack implementation complete: backend seeded with 502 parcels, Land Truth Engine running, frontend compiled and verified |
+| 1.2 | 2026-09-24 | Cloudflare deployment configs added: _redirects, Pages function API reverse proxy, wrangler.jsonc, docker-compose.cloudflare.yml, CLOUDFLARE_DEPLOYMENT.md |
 
