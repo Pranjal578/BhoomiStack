@@ -20,7 +20,6 @@ env/
 .venv/
 build/
 develop-eggs/
-dist/
 downloads/
 eggs/
 .eggs/
@@ -33,6 +32,15 @@ wheels/
 *.egg-info/
 .installed.cfg
 *.egg
+
+# Ignore dist/ inside subdirectories (Python build artifacts) but NOT at root
+backend/dist/
+frontend/dist-ssr/
+
+# Explicitly track compiled frontend assets at repo root
+!index.html
+!_redirects
+!assets/
 
 # Node / Frontend
 frontend/node_modules/
