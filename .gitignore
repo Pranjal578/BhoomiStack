@@ -46,3 +46,7 @@ npm-debug.log*
 .DS_Store
 *.swp
 *.swo
+
+# Ignore any root-level requirements.txt (accidentally generated via pip freeze)
+# The actual project backend requirements live at backend/requirements.txt
+/requirements.txt
