@@ -24,6 +24,22 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
 
+IS_POSTGRES = not DATABASE_URL.startswith("sqlite")
+
+
+def init_postgis():
+    """Ensure PostGIS extension exists when running PostgreSQL."""
+    if IS_POSTGRES:
+        try:
+            from sqlalchemy import text
+            with engine.connect() as conn:
+                conn.execute(text("CREATE EXTENSION IF NOT EXISTS postgis;"))
+                conn.commit()
+                print("✅ PostGIS extension confirmed on PostgreSQL")
+        except Exception as e:
+            print(f"ℹ️ PostGIS init note: {e}")
+
+
 def get_db():
     db = SessionLocal()
     try:

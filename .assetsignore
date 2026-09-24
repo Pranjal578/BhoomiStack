@@ -1,0 +1,10 @@
+node_modules
+backend
+venv
+.venv
+.git
+.github
+*.db
+*.log
+docker-compose*.yml
+Dockerfile

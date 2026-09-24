@@ -3,7 +3,7 @@ FastAPI application entry point — BhoomiStack API.
 """
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from .database import engine, Base
+from .database import engine, Base, init_postgis
 from .routers import parcels, auth, dashboard, misc
 
 import os
@@ -15,6 +15,9 @@ backend_dir = Path(__file__).resolve().parent.parent
 root_dir = backend_dir.parent
 load_dotenv(backend_dir / ".env")
 load_dotenv(root_dir / ".env")
+
+# Initialize PostGIS extension on PostgreSQL before creating tables
+init_postgis()
 
 # Create all tables
 Base.metadata.create_all(bind=engine)

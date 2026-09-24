@@ -42,8 +42,10 @@ frontend/dist-ssr/
 !_redirects
 !assets/
 
-# Node / Frontend
+# Node / Frontend / Wrangler
+node_modules/
 frontend/node_modules/
+.wrangler/
 *.log
 npm-debug.log*
 

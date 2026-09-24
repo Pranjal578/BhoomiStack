@@ -4,7 +4,8 @@
   "version": "1.0.0",
   "description": "BhoomiStack — Integrated GIS-Based Digital Public Infrastructure for Land Governance",
   "scripts": {
-    "build": "cd frontend && npm install && npm run build && cp -r dist/* ..",
-    "dev": "cd frontend && npm run dev"
+    "build": "cd frontend && npm install && npm run build",
+    "dev": "cd frontend && npm run dev",
+    "deploy": "wrangler deploy"
   }
 }

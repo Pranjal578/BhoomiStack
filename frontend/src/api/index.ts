@@ -11,6 +11,27 @@ export const getGeoJSON = async () => {
   return data;
 };
 
+export const getParcelAtPoint = async (lat: number, lon: number): Promise<ParcelSearchResult> => {
+  const { data } = await client.get<ApiResponse<ParcelSearchResult>>(`/parcels/spatial/point?lat=${lat}&lon=${lon}`);
+  return data.data;
+};
+
+export const getParcelsInBBox = async (minLon: number, minLat: number, maxLon: number, maxLat: number) => {
+  const { data } = await client.get(`/parcels/spatial/bbox?min_lon=${minLon}&min_lat=${minLat}&max_lon=${maxLon}&max_lat=${maxLat}`);
+  return data;
+};
+
+export const getGeodesicArea = async (ulpin: string) => {
+  const { data } = await client.get<ApiResponse<{
+    ulpin: string;
+    geodesic_area_hectares: number;
+    recorded_gis_area_hectares: number;
+    variance_pct: number;
+    postgis_computed: boolean;
+  }>>(`/parcels/${ulpin}/spatial/geodesic-area`);
+  return data.data;
+};
+
 export const searchParcels = async (q: string): Promise<ParcelSearchResult[]> => {
   const { data } = await client.get<ApiResponse<ParcelSearchResult[]>>(`/parcels/search?q=${encodeURIComponent(q)}`);
   return data.data;

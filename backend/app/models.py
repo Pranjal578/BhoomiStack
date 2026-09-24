@@ -1,6 +1,15 @@
-from sqlalchemy import Column, Integer, String, Float, Text, DateTime
-from .database import Base
+from sqlalchemy import Column, Integer, String, Float, Text, DateTime, event
+from .database import Base, IS_POSTGRES
 import datetime
+
+# PostGIS integration via GeoAlchemy2
+HAS_GEOALCHEMY = False
+if IS_POSTGRES:
+    try:
+        from geoalchemy2 import Geometry
+        HAS_GEOALCHEMY = True
+    except ImportError:
+        HAS_GEOALCHEMY = False
 
 
 def now():
@@ -20,11 +29,33 @@ class Parcel(Base):
     land_use = Column(String)  # Agricultural/Residential/Commercial/Industrial/Government
     land_type = Column(String, default="Private")  # Private/Government/Forest
     geometry = Column(Text)  # GeoJSON polygon as JSON string
+    
+    # PostGIS Spatial Column (SRID 4326: WGS84 GPS Coordinates)
+    if HAS_GEOALCHEMY:
+        geom = Column(Geometry(geometry_type='GEOMETRY', srid=4326, spatial_index=True), nullable=True)
+
     risk_score = Column(Integer, default=0)
     risk_level = Column(String, default="LOW")
     satellite_change_flag = Column(Integer, default=0)
     created_at = Column(String, default=now)
     updated_at = Column(String, default=now)
+
+
+if HAS_GEOALCHEMY:
+    @event.listens_for(Parcel, "before_insert")
+    @event.listens_for(Parcel, "before_update")
+    def sync_geom_from_geojson(mapper, connection, target):
+        """Automatically keep PostGIS spatial geom in sync with GeoJSON text."""
+        if target.geometry and not getattr(target, "geom", None):
+            try:
+                import json
+                from shapely.geometry import shape
+                import shapely.wkt
+                geom_dict = json.loads(target.geometry)
+                shply_geom = shape(geom_dict)
+                target.geom = f"SRID=4326;{shapely.wkt.dumps(shply_geom)}"
+            except Exception:
+                pass
 
 
 class Owner(Base):
