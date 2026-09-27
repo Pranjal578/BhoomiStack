@@ -110,6 +110,21 @@ export const analyzeDocument = async (ulpin: string, documentType: string): Prom
   return data.data;
 };
 
+export const uploadDocument = async (
+  file: File,
+  ulpin: string,
+  documentType: string
+): Promise<DocumentAnalysisResult & { uploaded_file?: { filename: string; size_kb: number; content_type: string; note: string } }> => {
+  const form = new FormData();
+  form.append('file', file);
+  form.append('ulpin', ulpin);
+  form.append('document_type', documentType);
+  const { data } = await client.post('/documents/upload', form, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+  return data.data;
+};
+
 // --- Auth ---
 export const login = async (email: string, password: string) => {
   const { data } = await client.post('/auth/login', { email, password });

@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import './index.css';
 import Navbar from './components/shared/Navbar';
 import Toast from './components/shared/Toast';
+import CookieConsent from './components/shared/CookieConsent';
 import HomePage from './pages/HomePage';
 import MapPage from './pages/MapPage';
 import VerificationPage from './pages/VerificationPage';
@@ -13,6 +14,9 @@ import PlanningDashboard from './pages/dashboard/PlanningDashboard';
 import MunicipalDashboard from './pages/dashboard/MunicipalDashboard';
 import AdminPanel from './pages/AdminPanel';
 import VerifyCertificate from './pages/VerifyCertificate';
+import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
+import TermsPage from './pages/TermsPage';
+import NotFoundPage from './pages/NotFoundPage';
 import { useAuthStore } from './store';
 
 function ProtectedRoute({ children, roles }: { children: React.ReactNode; roles?: string[] }) {
@@ -37,6 +41,8 @@ export default function App() {
             <Route path="/verify/:verificationId" element={<VerifyCertificate />} />
             <Route path="/documents" element={<DocumentIntelligencePage />} />
             <Route path="/login" element={<LoginPage />} />
+            <Route path="/privacy" element={<PrivacyPolicyPage />} />
+            <Route path="/terms" element={<TermsPage />} />
             <Route path="/dashboard/revenue" element={
               <ProtectedRoute roles={['revenue_officer', 'admin']}>
                 <RevenueDashboard />
@@ -57,10 +63,12 @@ export default function App() {
                 <AdminPanel />
               </ProtectedRoute>
             } />
-            <Route path="*" element={<Navigate to="/" replace />} />
+            {/* Custom 404 - must be last */}
+            <Route path="*" element={<NotFoundPage />} />
           </Routes>
         </main>
         <Toast />
+        <CookieConsent />
       </div>
     </BrowserRouter>
   );

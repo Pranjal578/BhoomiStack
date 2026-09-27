@@ -17,9 +17,20 @@ export default function VerificationPage() {
   const [loading, setLoading] = useState(false);
   const [report, setReport] = useState<VerificationReport | null>(null);
   const [animationStep, setAnimationStep] = useState<number>(0);
+  const [ulpinError, setUlpinError] = useState('');
 
   const runVerification = async (targetUlpin: string) => {
-    if (!targetUlpin.trim()) return;
+    if (!targetUlpin.trim()) {
+      setUlpinError('Please enter a ULPIN to verify.');
+      return;
+    }
+    // Validate ULPIN format (e.g. UP-PRY-000042)
+    const ulpinPattern = /^[A-Z]{2}-[A-Z]{2,4}-\d{4,8}$/i;
+    if (!ulpinPattern.test(targetUlpin.trim())) {
+      setUlpinError('Invalid ULPIN format. Expected format: UP-PRY-000042');
+      return;
+    }
+    setUlpinError('');
     setLoading(true);
     setReport(null);
     setAnimationStep(0);
@@ -113,19 +124,28 @@ export default function VerificationPage() {
                 id="verify-ulpin-input"
                 type="text"
                 value={inputUlpin}
-                onChange={(e) => setInputUlpin(e.target.value)}
+                onChange={(e) => { setInputUlpin(e.target.value); setUlpinError(''); }}
+                onKeyDown={(e) => e.key === 'Enter' && runVerification(inputUlpin)}
                 placeholder="Enter ULPIN (e.g. UP-PRY-000042 or UP-PRY-001245)..."
+                aria-label="ULPIN — Unique Land Parcel Identification Number"
+                aria-describedby={ulpinError ? 'ulpin-error' : undefined}
+                aria-invalid={!!ulpinError}
                 style={{
                   width: '100%',
                   padding: '12px 16px',
                   borderRadius: 8,
-                  border: '1.5px solid #cbd5e1',
+                  border: `1.5px solid ${ulpinError ? '#ef4444' : '#cbd5e1'}`,
                   fontSize: 14,
                   fontFamily: 'monospace',
                   fontWeight: 600,
                   outline: 'none'
                 }}
               />
+              {ulpinError && (
+                <div id="ulpin-error" className="field-error" role="alert" style={{ marginTop: 6 }}>
+                  {ulpinError}
+                </div>
+              )}
             </div>
             <button
               id="btn-run-verify"

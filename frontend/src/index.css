@@ -976,3 +976,210 @@ label {
   }
   body { background: white !important; }
 }
+
+/* ============================================================
+   Item 13: Color Contrast Fixes (WCAG 2.1 AA – 4.5:1 minimum)
+   ============================================================ */
+
+/* Improved contrast for muted text on light backgrounds */
+.kpi-label { color: #374151; }          /* was #94a3b8 – now meets AA */
+.kpi-card .kpi-label { color: #374151; }
+
+/* Badge contrast fixes */
+.badge-LOW, .badge-risk-LOW { background: #dcfce7; color: #14532d; }       /* ratio 7.5:1 */
+.badge-MEDIUM, .badge-risk-MEDIUM { background: #fef9c3; color: #713f12; } /* ratio 7:1 */
+.badge-HIGH, .badge-risk-HIGH { background: #fee2e2; color: #7f1d1d; }     /* ratio 7:1 */
+.badge-VERIFIED, .badge-APPROVED, .badge-PAID, .badge-ACTIVE { background: #dcfce7; color: #14532d; }
+.badge-PENDING { background: #fef9c3; color: #713f12; }
+.badge-REJECTED, .badge-OVERDUE, .badge-FLAGGED { background: #fee2e2; color: #7f1d1d; }
+.badge-PARTIALLY_VERIFIED { background: #ede9fe; color: #3b0764; }         /* ratio 7:1 */
+
+/* Nav link improved contrast on dark background */
+.nav-link { color: #cbd5e1; }           /* was #94a3b8 – improved for dark bg */
+.nav-link:hover { color: #f8fafc; background: rgba(255,255,255,0.1); }
+
+/* Focus outlines for keyboard accessibility */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid #60a5fa;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* ============================================================
+   Item 14: Mobile-Friendly / Responsive Styles
+   ============================================================ */
+
+/* Navbar collapses on mobile */
+@media (max-width: 768px) {
+  .navbar {
+    padding: 0 16px;
+    gap: 12px;
+    height: 56px;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+  }
+
+  .navbar-nav {
+    display: none; /* Hide main nav on small screens */
+  }
+
+  .navbar-brand .navbar-tagline { display: none; }
+
+  /* Show hamburger menu placeholder */
+  .navbar-mobile-menu {
+    display: flex;
+    align-items: center;
+  }
+}
+
+@media (min-width: 769px) {
+  .navbar-mobile-menu { display: none; }
+}
+
+/* Hero section mobile */
+@media (max-width: 640px) {
+  /* Reduce hero padding */
+  section[style*="120px 24px 80px"] {
+    padding: 100px 16px 60px !important;
+  }
+
+  /* Stack KPI cards */
+  .kpi-card { padding: 16px; }
+  .kpi-number { font-size: 28px !important; }
+
+  /* Full-width buttons on mobile */
+  .btn-lg { width: 100%; justify-content: center; }
+
+  /* Cards full width */
+  .card { border-radius: 10px; }
+
+  /* Dashboard layout mobile */
+  .dashboard-container { padding: 16px; padding-top: calc(56px + 16px); }
+  .kpi-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+  .charts-grid { grid-template-columns: 1fr; }
+  .dashboard-header { flex-direction: column; align-items: flex-start; gap: 12px; }
+}
+
+@media (max-width: 480px) {
+  .kpi-grid { grid-template-columns: 1fr; }
+}
+
+/* Map page mobile */
+@media (max-width: 1024px) {
+  .map-layout {
+    flex-direction: column !important;
+  }
+  .parcel-panel {
+    width: 100% !important;
+    max-height: 50vh;
+    overflow-y: auto;
+  }
+}
+
+/* Login page mobile */
+@media (max-width: 640px) {
+  .login-card { padding: 24px; }
+}
+
+/* ============================================================
+   Item 17: Form Validation Styles
+   ============================================================ */
+
+/* Valid state */
+input:valid:not(:placeholder-shown),
+textarea:valid:not(:placeholder-shown),
+select:valid {
+  border-color: #10b981 !important;
+}
+
+/* Invalid state (only show after interaction) */
+input:invalid:not(:placeholder-shown):not(:focus),
+textarea:invalid:not(:placeholder-shown):not(:focus) {
+  border-color: #ef4444 !important;
+  background: #fef2f2 !important;
+}
+
+/* Form field error message styling */
+.field-error {
+  color: #dc2626;
+  font-size: 12px;
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 500;
+}
+
+.field-success {
+  color: #059669;
+  font-size: 12px;
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 500;
+}
+
+/* Required field indicator */
+label.required::after {
+  content: ' *';
+  color: #dc2626;
+  font-weight: 700;
+}
+
+/* Input focus ring */
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none;
+  border-color: var(--primary) !important;
+  box-shadow: 0 0 0 3px rgba(26, 86, 219, 0.15) !important;
+}
+
+/* ============================================================
+   Item 18: Bot / Spam Protection – Honeypot styles
+   ============================================================ */
+
+/* Honeypot field – visually hidden but not display:none (bots fill it) */
+.hp-field {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  opacity: 0;
+  tab-index: -1;
+}
+
+/* CAPTCHA container */
+.captcha-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 13px;
+  color: #475569;
+}
+
+/* ============================================================
+   Item 19: Analytics opt-in badge
+   ============================================================ */
+.analytics-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  background: rgba(16,185,129,0.1);
+  color: #059669;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+}
+

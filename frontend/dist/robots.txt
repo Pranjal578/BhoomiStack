@@ -1,0 +1,22 @@
+# BhoomiStack — robots.txt
+# Digital Public Infrastructure for Land Governance
+# https://bhoomistack.gov.in
+
+User-agent: *
+Allow: /
+Allow: /map
+Allow: /verify
+Allow: /documents
+Allow: /privacy
+Allow: /terms
+
+# Disallow authenticated-only routes (no useful content for crawlers)
+Disallow: /dashboard/
+Disallow: /admin
+Disallow: /api/
+
+# Sitemap location
+Sitemap: https://bhoomistack.gov.in/sitemap.xml
+
+# Crawl delay (be respectful of server resources)
+Crawl-delay: 5

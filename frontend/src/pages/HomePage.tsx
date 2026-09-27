@@ -359,6 +359,42 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* CTA Section (Item 20: One clear call to action) */}
+      <section style={{
+        background: 'linear-gradient(135deg, #1a56db 0%, #7c3aed 100%)',
+        padding: '64px 24px',
+        textAlign: 'center',
+        marginTop: 60
+      }}>
+        <div style={{ maxWidth: 680, margin: '0 auto' }}>
+          <h2 style={{ fontSize: 30, fontWeight: 800, color: '#ffffff', marginBottom: 12 }}>
+            Verify Any Land Parcel — Instantly
+          </h2>
+          <p style={{ color: '#c7d2fe', fontSize: 15, lineHeight: 1.6, marginBottom: 28 }}>
+            Get a tamper-proof, multi-department verified land title report in seconds.
+            No legal jargon. Just clear, trusted data.
+          </p>
+          <button
+            id="cta-verify-parcel"
+            type="button"
+            className="btn"
+            onClick={() => navigate('/verify')}
+            style={{
+              background: '#ffffff',
+              color: '#1e1b4b',
+              padding: '14px 36px',
+              fontSize: 16,
+              fontWeight: 700,
+              borderRadius: 10,
+              boxShadow: '0 8px 24px rgba(0,0,0,0.2)',
+              gap: 10
+            }}
+          >
+            <ArrowRight size={18} /> Start Free Verification
+          </button>
+        </div>
+      </section>
+
       {/* Footer */}
       <footer style={{
         background: '#0f172a',
@@ -366,21 +402,61 @@ export default function HomePage() {
         padding: '48px 24px 32px',
         borderTop: '1px solid rgba(255,255,255,0.08)',
         fontSize: 13,
-        marginTop: 60
       }}>
-        <div style={{ maxWidth: 1100, margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 20 }}>
-          <div>
-            <div style={{ fontWeight: 800, fontSize: 18, color: '#ffffff', letterSpacing: '-0.02em' }}>
-              Bhoomi<span style={{ color: '#7c3aed' }}>Stack</span>
+        <div style={{ maxWidth: 1100, margin: '0 auto' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 32, marginBottom: 28 }}>
+            <div>
+              <div style={{ fontWeight: 800, fontSize: 18, color: '#ffffff', letterSpacing: '-0.02em', marginBottom: 4 }}>
+                Bhoomi<span style={{ color: '#7c3aed' }}>Stack</span>
+              </div>
+              <p style={{ color: '#64748b', maxWidth: 320, lineHeight: 1.6 }}>
+                Integrated GIS-Based Digital Public Infrastructure for Land Governance.
+                Compliant with DILRMP • ULPIN Bhu-Aadhaar Standard • NGDAS.
+              </p>
             </div>
-            <p style={{ marginTop: 4, color: '#64748b' }}>
-              Integrated GIS-Based Digital Public Infrastructure for Land Governance.
-            </p>
+            <div style={{ display: 'flex', gap: 48, flexWrap: 'wrap' }}>
+              <div>
+                <div style={{ fontWeight: 600, color: '#e2e8f0', marginBottom: 12, fontSize: 13 }}>Platform</div>
+                {[
+                  { label: 'GIS Parcel Explorer', path: '/map' },
+                  { label: 'Public Verification', path: '/verify' },
+                  { label: 'Document Intelligence', path: '/documents' },
+                  { label: 'Department Login', path: '/login' },
+                ].map(link => (
+                  <div key={link.path} style={{ marginBottom: 8 }}>
+                    <a href={link.path} style={{ color: '#64748b', textDecoration: 'none', transition: 'color 0.15s' }}
+                       onMouseEnter={e => (e.currentTarget.style.color = '#94a3b8')}
+                       onMouseLeave={e => (e.currentTarget.style.color = '#64748b')}>
+                      {link.label}
+                    </a>
+                  </div>
+                ))}
+              </div>
+              <div>
+                <div style={{ fontWeight: 600, color: '#e2e8f0', marginBottom: 12, fontSize: 13 }}>Legal</div>
+                {[
+                  { label: 'Privacy Policy', path: '/privacy' },
+                  { label: 'Terms & Conditions', path: '/terms' },
+                ].map(link => (
+                  <div key={link.path} style={{ marginBottom: 8 }}>
+                    <a href={link.path} style={{ color: '#64748b', textDecoration: 'none', transition: 'color 0.15s' }}
+                       onMouseEnter={e => (e.currentTarget.style.color = '#94a3b8')}
+                       onMouseLeave={e => (e.currentTarget.style.color = '#64748b')}>
+                      {link.label}
+                    </a>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
-          <div style={{ textAlign: 'right' }}>
-            <div>Compliant with DILRMP • ULPIN Bhu-Aadhaar Standard • NGDAS</div>
-            <div style={{ fontSize: 11, color: '#475569', marginTop: 4 }}>
-              Demonstration prototype for Prayagraj District, Uttar Pradesh.
+          <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: 20, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
+            <div style={{ fontSize: 11, color: '#475569' }}>
+              © 2026 Department of Land Resources, Government of India. Demonstration prototype for Prayagraj District, Uttar Pradesh.
+            </div>
+            <div style={{ fontSize: 11, color: '#475569' }}>
+              <a href="/sitemap.xml" style={{ color: '#475569', textDecoration: 'none' }}>Sitemap</a>
+              {' '}·{' '}
+              <a href="/robots.txt" style={{ color: '#475569', textDecoration: 'none' }}>robots.txt</a>
             </div>
           </div>
         </div>

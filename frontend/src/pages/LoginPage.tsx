@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { UserCheck, Shield, KeyRound, ArrowRight, CheckCircle2, Lock } from 'lucide-react';
+import { UserCheck, Shield, KeyRound, ArrowRight, CheckCircle2, Lock, AlertCircle } from 'lucide-react';
 import { login } from '../api';
 import { useAuthStore, useUiStore } from '../store';
 
@@ -55,6 +55,12 @@ export default function LoginPage() {
   const [email, setEmail] = useState('citizen@bhoomi.gov.in');
   const [password, setPassword] = useState('password123');
   const [loading, setLoading] = useState(false);
+  // Honeypot field for bot protection (Item 18)
+  const [honeypot, setHoneypot] = useState('');
+  // Form validation errors
+  const [emailError, setEmailError] = useState('');
+  const [passwordError, setPasswordError] = useState('');
+  const formRef = useRef<HTMLFormElement>(null);
 
   const handlePersonaSelect = async (persona: typeof DEMO_PERSONAS[0]) => {
     setLoading(true);
@@ -79,8 +85,36 @@ export default function LoginPage() {
     }
   };
 
+  const validateForm = (): boolean => {
+    let valid = true;
+    setEmailError('');
+    setPasswordError('');
+
+    if (!email.trim()) {
+      setEmailError('Email address is required.');
+      valid = false;
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setEmailError('Please enter a valid government email address.');
+      valid = false;
+    }
+
+    if (!password.trim()) {
+      setPasswordError('Password is required.');
+      valid = false;
+    } else if (password.length < 6) {
+      setPasswordError('Password must be at least 6 characters.');
+      valid = false;
+    }
+
+    return valid;
+  };
+
   const handleManualSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    // Bot protection: if honeypot is filled, silently reject (Item 18)
+    if (honeypot) return;
+    if (!validateForm()) return;
+
     setLoading(true);
     try {
       const res = await login(email, password);
@@ -170,40 +204,83 @@ export default function LoginPage() {
           <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
             <KeyRound size={18} color="#1a56db" /> Manual Account Login
           </h3>
-          <form onSubmit={handleManualSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+          <form ref={formRef} onSubmit={handleManualSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }} noValidate>
+            {/* Honeypot field – invisible to users, filled only by bots (Item 18) */}
+            <div className="hp-field" aria-hidden="true">
+              <label htmlFor="hp-website">Website</label>
+              <input
+                id="hp-website"
+                type="text"
+                name="website"
+                value={honeypot}
+                onChange={e => setHoneypot(e.target.value)}
+                tabIndex={-1}
+                autoComplete="off"
+              />
+            </div>
+
             <div>
-              <label style={{ fontSize: 12, fontWeight: 600, color: '#475569', display: 'block', marginBottom: 4 }}>
+              <label
+                htmlFor="login-email"
+                className="required"
+                style={{ fontSize: 12, fontWeight: 600, color: '#475569', display: 'block', marginBottom: 4 }}
+              >
                 Govt Email Address
               </label>
               <input
+                id="login-email"
                 type="email"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => { setEmail(e.target.value); setEmailError(''); }}
+                required
+                aria-describedby={emailError ? 'login-email-error' : undefined}
+                aria-invalid={!!emailError}
                 style={{
                   width: '100%',
                   padding: '10px 12px',
                   borderRadius: 6,
-                  border: '1px solid #cbd5e1',
-                  fontSize: 13
+                  border: `1px solid ${emailError ? '#ef4444' : '#cbd5e1'}`,
+                  fontSize: 13,
+                  transition: 'border-color 0.15s'
                 }}
               />
+              {emailError && (
+                <div id="login-email-error" className="field-error" role="alert">
+                  <AlertCircle size={12} /> {emailError}
+                </div>
+              )}
             </div>
             <div>
-              <label style={{ fontSize: 12, fontWeight: 600, color: '#475569', display: 'block', marginBottom: 4 }}>
-                Password (Default: password123)
+              <label
+                htmlFor="login-password"
+                className="required"
+                style={{ fontSize: 12, fontWeight: 600, color: '#475569', display: 'block', marginBottom: 4 }}
+              >
+                Password
               </label>
               <input
+                id="login-password"
                 type="password"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) => { setPassword(e.target.value); setPasswordError(''); }}
+                required
+                minLength={6}
+                aria-describedby={passwordError ? 'login-password-error' : undefined}
+                aria-invalid={!!passwordError}
                 style={{
                   width: '100%',
                   padding: '10px 12px',
                   borderRadius: 6,
-                  border: '1px solid #cbd5e1',
-                  fontSize: 13
+                  border: `1px solid ${passwordError ? '#ef4444' : '#cbd5e1'}`,
+                  fontSize: 13,
+                  transition: 'border-color 0.15s'
                 }}
               />
+              {passwordError && (
+                <div id="login-password-error" className="field-error" role="alert">
+                  <AlertCircle size={12} /> {passwordError}
+                </div>
+              )}
             </div>
             <button
               type="submit"
@@ -211,7 +288,7 @@ export default function LoginPage() {
               disabled={loading}
               style={{ justifyContent: 'center', marginTop: 4 }}
             >
-              Sign In to BhoomiStack
+              {loading ? 'Signing in…' : 'Sign In to BhoomiStack'}
             </button>
           </form>
         </div>
