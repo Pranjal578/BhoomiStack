@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import Optional, List, Any
 import datetime
 
@@ -7,7 +7,7 @@ import datetime
 class ApiResponse(BaseModel):
     success: bool = True
     data: Any
-    timestamp: str = datetime.datetime.utcnow().isoformat()
+    timestamp: str = Field(default_factory=lambda: datetime.datetime.now(datetime.timezone.utc).isoformat())
     version: str = "1.0"
 
 

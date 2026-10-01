@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Optional
 from jose import JWTError, jwt
 import bcrypt
@@ -10,7 +10,13 @@ from ..models import User
 
 import os
 
-SECRET_KEY = os.getenv("SECRET_KEY", "bhoomistack-secret-key-sih-2026-demo-only")
+_secret = os.getenv("SECRET_KEY")
+if not _secret:
+    raise RuntimeError(
+        "SECRET_KEY environment variable is required and must not be empty. "
+        "Generate one with: python -c \"import secrets; print(secrets.token_hex(32))\""
+    )
+SECRET_KEY: str = _secret
 ALGORITHM = os.getenv("ALGORITHM", "HS256")
 ACCESS_TOKEN_EXPIRE_HOURS = int(os.getenv("ACCESS_TOKEN_EXPIRE_HOURS", "8"))
 
@@ -27,7 +33,7 @@ def get_password_hash(password: str) -> str:
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
     to_encode = data.copy()
-    expire = datetime.utcnow() + (expires_delta or timedelta(hours=ACCESS_TOKEN_EXPIRE_HOURS))
+    expire = datetime.now(timezone.utc) + (expires_delta or timedelta(hours=ACCESS_TOKEN_EXPIRE_HOURS))
     to_encode.update({"exp": expire})
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
@@ -78,7 +84,7 @@ def require_role(*roles: str):
         user = get_current_user(credentials, db)
         if not user:
             raise HTTPException(status_code=401, detail="Not authenticated")
-        if user.role not in roles and "admin" not in [user.role]:
+        if user.role not in roles and user.role != "admin":
             raise HTTPException(status_code=403, detail=f"Role {user.role} not permitted")
         return user
     return checker

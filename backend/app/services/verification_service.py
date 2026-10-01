@@ -3,28 +3,45 @@ Verification Service — generates land verification reports with QR codes.
 """
 import json
 import random
+import re
 import string
+import secrets
 import base64
 import io
+import os
+import datetime
 from sqlalchemy.orm import Session
 from ..models import Parcel, OwnershipRecord, Owner, Registration, Encumbrance, Dispute
 from ..schemas import VerificationReportSchema, VerificationCheck
 from ..models import VerificationReport
 from .. import models
-import datetime
+
+try:
+    import qrcode as _qrcode
+    _HAS_QRCODE = True
+except ImportError:
+    _HAS_QRCODE = False
 
 
-def generate_verification_id() -> str:
+def generate_verification_id(db: Session) -> str:
     """Generate a unique verification ID in format LV-2026-XXXXXX."""
-    suffix = ''.join(random.choices(string.digits, k=6))
-    return f"LV-2026-{suffix}"
+    for _ in range(10):  # retry up to 10 times to avoid collisions
+        suffix = secrets.token_hex(3).upper()  # 16M+ possibilities, cryptographically random
+        vid = f"LV-2026-{suffix}"
+        exists = db.query(VerificationReport).filter(
+            VerificationReport.verification_id == vid
+        ).first()
+        if not exists:
+            return vid
+    raise RuntimeError("Unable to generate a unique verification ID after 10 attempts")
 
 
 def generate_qr_code(data: str) -> str:
     """Generate QR code and return as base64 PNG string."""
+    if not _HAS_QRCODE:
+        return ""
     try:
-        import qrcode
-        qr = qrcode.QRCode(version=1, box_size=6, border=2)
+        qr = _qrcode.QRCode(version=1, box_size=6, border=2)
         qr.add_data(data)
         qr.make(fit=True)
         img = qr.make_image(fill_color="black", back_color="white")
@@ -65,12 +82,14 @@ def run_verification(ulpin: str, db: Session) -> VerificationReportSchema:
         detail=f"ULPIN {ulpin} found in cadastral registry" if parcel else "Parcel not found"
     ))
 
-    # Check 2: ULPIN is valid
+    # Check 2: ULPIN is valid (format + exists in DB)
+    _ULPIN_RE = re.compile(r'^[A-Z0-9]{2,4}-\d{6,}$')
+    ulpin_valid = bool(_ULPIN_RE.match(ulpin)) and parcel is not None
     checks.append(VerificationCheck(
         check_id="ULPIN_VALID",
         label="ULPIN is registered and valid",
-        status="PASS",
-        detail=f"ULPIN format valid: {ulpin}"
+        status="PASS" if ulpin_valid else "FAIL",
+        detail=f"ULPIN format valid: {ulpin}" if ulpin_valid else f"Invalid or unregistered ULPIN: {ulpin}"
     ))
 
     # Check 3: RoR available
@@ -123,7 +142,7 @@ def run_verification(ulpin: str, db: Session) -> VerificationReportSchema:
 
     # Check 9: Area consistency
     area_ok = True
-    if ownership and parcel:
+    if ownership and parcel and parcel.area_gis:
         if ownership.area_ror and abs(parcel.area_gis - ownership.area_ror) / parcel.area_gis > 0.10:
             area_ok = False
     checks.append(VerificationCheck(
@@ -153,8 +172,9 @@ def run_verification(ulpin: str, db: Session) -> VerificationReportSchema:
     else:
         status = "VERIFIED"
 
-    verification_id = generate_verification_id()
-    qr_url = f"http://localhost:8000/api/v1/verify/{verification_id}"
+    verification_id = generate_verification_id(db)
+    _base_url = os.getenv("PUBLIC_API_BASE_URL", "http://localhost:8000").rstrip("/")
+    qr_url = f"{_base_url}/api/v1/verify/{verification_id}"
     qr_data = generate_qr_code(qr_url)
 
     report = VerificationReportSchema(
@@ -170,7 +190,7 @@ def run_verification(ulpin: str, db: Session) -> VerificationReportSchema:
         encumbrance_status="ACTIVE" if active_enc else "NONE",
         dispute_status="PENDING" if active_dispute else "NONE",
         qr_data=qr_data,
-        created_at=datetime.datetime.utcnow().isoformat()
+        created_at=datetime.datetime.now(datetime.timezone.utc).isoformat()
     )
 
     # Persist to DB

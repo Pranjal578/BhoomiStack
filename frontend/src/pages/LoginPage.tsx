@@ -52,8 +52,10 @@ export default function LoginPage() {
   const { setAuth } = useAuthStore();
   const { addToast } = useUiStore();
 
-  const [email, setEmail] = useState('citizen@bhoomi.gov.in');
-  const [password, setPassword] = useState('password123');
+  const isDemoMode = import.meta.env.VITE_DEMO_MODE === 'true';
+
+  const [email, setEmail] = useState(isDemoMode ? 'citizen@bhoomi.gov.in' : '');
+  const [password, setPassword] = useState(isDemoMode ? 'password123' : '');
   const [loading, setLoading] = useState(false);
   // Honeypot field for bot protection (Item 18)
   const [honeypot, setHoneypot] = useState('');
@@ -63,6 +65,7 @@ export default function LoginPage() {
   const formRef = useRef<HTMLFormElement>(null);
 
   const handlePersonaSelect = async (persona: typeof DEMO_PERSONAS[0]) => {
+    if (loading) return;
     setLoading(true);
     try {
       const res = await login(persona.email, 'password123');
@@ -73,13 +76,7 @@ export default function LoginPage() {
       }
     } catch (err) {
       console.error('Demo login failed', err);
-      // Fallback local auth mock if offline
-      setAuth(
-        { email: persona.email, name: persona.name, role: persona.role },
-        'demo-jwt-token-123'
-      );
-      addToast(`Switched persona to ${persona.name}`, 'info');
-      navigate(persona.target);
+      addToast('Demo login failed. Please ensure the backend is running.', 'error');
     } finally {
       setLoading(false);
     }
@@ -162,9 +159,15 @@ export default function LoginPage() {
             <div
               key={p.role}
               className="card"
+              role="button"
+              tabIndex={loading ? -1 : 0}
+              aria-label={`Login as ${p.name} – ${p.role.replace('_', ' ')}`}
+              aria-disabled={loading}
               onClick={() => handlePersonaSelect(p)}
+              onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && handlePersonaSelect(p)}
               style={{
-                cursor: 'pointer',
+                cursor: loading ? 'not-allowed' : 'pointer',
+                opacity: loading ? 0.6 : 1,
                 display: 'flex',
                 flexDirection: 'column',
                 justifyContent: 'space-between',
